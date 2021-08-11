@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="style.css">
+
+    <!--Font-->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+
+    <title>Local Tapas</title>
+</head>
+<body>
+
+   
+        <div class="container_img">
+            <img src="logo_restaurant.png" alt="logo">
+        </div>
+
+        <div class="container_form">
+            <h2>Local Tapas</h2>
+            
+            <ul class="plates-list">
+                <li>loading tapas...</li>
+               
+            </ul>
+
+            <form class="add-items">
+                <input type="text" name="item" placeholder="Item Name" required>
+                <input type="submit" value="+ Add Item">
+            </form>
+        
+        </div>
+    
+   <script>
+       const itemsList = document.querySelector('.plates-list')
+       const addItems = document.querySelector('.add-items')
+
+       //LocalStorage
+       //getItem
+
+       //if it has items in local storage parse them if not return an empty array
+       //get the items by the name of the key defined in setItem - 'items'
+       const items =JSON.parse(localStorage.getItem('items')) || []
+
+       //function that adds an item from input to the array
+       //this function will be where we set item to localStorage too
+       const addItem = function(e){
+             e.preventDefault();
+             const text = (this.querySelector('[name = item]')).value;
+             const item={
+                 text:text,
+                 done:false
+             }
+
+             items.push(item)
+
+             populateList(items,itemsList)
+
+             //LocalStorage
+             //set item
+             //'items' -> name ->key 
+             //items ->  array ->value
+             localStorage.setItem('items', JSON.stringify(items))
+
+             //reset the form and focus the input 
+             this.reset()
+             
+             const input = this.querySelector('[name=item]')
+             input.focus()
+
+       }
+
+       //generic function that populates List in html
+       const populateList = (platesArr = [], platesList) =>{
+           //we get also the index to define an unique value for each item(plate) defined in data-index
+           //contitional ternary operator says : if item plate is done we add the attribute checked if not we just add empty strings 
+            platesList.innerHTML = platesArr.map( (plate,i) =>{
+                return `
+
+                <li>
+                    <input type="checkbox" data-index= ${i} id="item${i}" ${plate.done ? 'checked' : ''}/> 
+                    <label for="item${i}"> ${plate.text}</label>
+                </li>
+                `
+            }).join('')
+       }
+
+       //function that changes the  property done to true or false by consequence of the click in checkbox
+       const toggleDone = function(e){
+           //first we need to return when we click anything that is not the input checkbox
+           if(!e.target.matches('input')) return;
+
+           //element clicked
+           const el = e.target
+
+           //get the value of the  data attribute for the input checkbox element
+           const index = el.dataset.index
+
+           //toggle the input checkbox is going toggling the done property with specific index clicked in the input. relation between input checkbox and the property done that is in items array for each item;
+           items[index].done = !items[index].done 
+
+           //LocalStorage
+           //setItem
+           //here we need too to setItem in localStorage because of the changings in property done, and call again the function populateList to render the changes
+           localStorage.setItem('items', JSON.stringify(items))
+
+           populateList(items, itemsList)
+
+
+           
+       }
+    
+
+
+       addItems.addEventListener('submit', addItem)
+
+       //event elegation in UL
+       itemsList.addEventListener('click', toggleDone)
+
+        //we have to call this function at first time in case there is something to show at first time  from LocalStorage before adding somethin new.
+       populateList(items, itemsList)
+   </script>
+    
+</body>
+</html>
